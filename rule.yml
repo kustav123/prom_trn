@@ -1,0 +1,136 @@
+groups:
+- name: Hardware Related 
+  rules:
+
+#########################################----Disk Space----#####################################################
+#########################----We need Error Code from optus---------#############################################
+  - alert: InstanceDown
+    expr: up{job="exporter"} == 0
+    for: 5m
+    labels:
+      errorMessage: "SystemResources:Disk Usage high, minor"
+      originatingNode: "{{ $labels.instance }}"
+      severity: "critical"
+      thresholdValue: "25"
+      actualValue: "{{ $value }}"
+    annotations:
+       instance: "{{ $labels.instance }}"
+       summary: "Server down"
+       description: "{{ $labels.instance }}  has been down for more than 5 minutes."
+#########################################----Disk Space----#####################################################
+  - alert: "Low free space minor"
+    expr: (node_filesystem_free_bytes{mountpoint = "/"} / node_filesystem_size_bytes{mountpoint = "/home"} * 100) < 25
+    for: 5m
+    labels:
+      errorMessage: "SystemResources:Disk Usage high, minor"
+      originatingNode: "{{ $labels.instance }}"
+      severity: "minor"
+      thresholdValue: "25"
+      actualValue: "{{ $value }}"
+    annotations:
+       instance: "{{ $labels.instance }}"
+       summary: "File system free less the 10% "
+       description: " {{ $labels.mountpoint }} of  {{ $labels.instance }} has low free space of {{ $value }}% "
+  - alert: "Low free space warning"
+    expr: (node_filesystem_free_bytes{mountpoint = "/"} / node_filesystem_size_bytes{mountpoint = "/"} * 100) < 20
+    for: 5m
+    labels:
+      errorMessage: "SystemResources:Disk Usage high, warning"
+      originatingNode: "{{ $labels.instance }}"
+      severity: "warning"
+      thresholdValue: "20"
+      actualValue: "{{ $value }}"
+    annotations:
+       instance: "{{ $labels.instance }}"
+       summary: "File system free less the 10% "
+       description: " {{ $labels.mountpoint }} of  {{ $labels.instance }} has low free space of {{ $value }}% "
+  - alert: "Low free space critical"
+    expr: (node_filesystem_free_bytes{mountpoint = "/"} / node_filesystem_size_bytes{mountpoint = "/home"} * 100) < 10
+    for: 5m
+    labels:
+      errorMessage: "SystemResources:Disk Usage high, critical"
+      originatingNode: "{{ $labels.instance }}"
+      severity: "critical"
+      thresholdValue: "10"
+      actualValue: "{{ $value }}"
+    annotations:
+       instance: "{{ $labels.instance }}"
+       summary: "File system free less the 10% "
+       description: " {{ $labels.mountpoint }} of  {{ $labels.instance }} has low free space of {{ $value }}% "
+ ##################################################----RAM Useage----#########################################################         
+  - alert: "HostOutOfMemory minor"
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 25
+    for: 5m
+    labels:
+       errorMessage: "SystemResources:Memory Usage high, minor"
+       originatingNode: "{{ $labels.instance }}"
+       severity: "minor"
+       thresholdValue: "25"
+       actualValue: "{{ $value }}"
+    annotations:
+       summary: "Host out of memory (instance {{ $labels.instance }})"
+       description: "Node memory is filling up (< 25% left)  VALUE = {{ $value }} "
+  - alert: "HostOutOfMemory warning"
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 20
+    for: 5m
+    labels:
+       errorMessage: "SystemResources:Memory Usage high, warning"
+       originatingNode: "{{ $labels.instance }}"
+       severity: "warning"
+       thresholdValue: "20"
+       actualValue: "{{ $value }}"
+    annotations:
+       summary: "Host out of memory (instance {{ $labels.instance }})"
+       description: "Node memory is filling up (< 20% left)  VALUE = {{ $value }} "
+  - alert: "HostOutOfMemory critical"
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10
+    for: 5m
+    labels:
+       errorMessage: "SystemResources:Memory Usage high, critical"
+       originatingNode: "{{ $labels.instance }}"
+       severity: "critical"
+       thresholdValue: "10"
+       actualValue: "{{ $value }}"
+    annotations:
+       summary: "Host out of memory (instance {{ $labels.instance }})"
+       description: "Node memory is filling up (< 10% left)  VALUE = {{ $value }} "
+##################################################----CPU Useage----#######################################################
+
+  - alert: HostHighCpuLoad minor
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 75
+    for: 5m
+    labels:
+      errorMessage: "SystemResources:CPU Usage high, minor"
+      originatingNode: "{{ $labels.instance }}"
+      severity: "minor"
+      thresholdValue: "75"
+      actualValue: "{{ $value }}"
+    annotations:
+       summary: "Host high CPU load (instance {{ $labels.instance }})"
+       description: "CPU load is > 70%  VALUE = {{ $value }}" 
+  
+  - alert: HostHighCpuLoad warning
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 5m
+    labels:
+      errorMessage: "SystemResources:CPU Usage high, warning"
+      originatingNode: "{{ $labels.instance }}"
+      severity: "warning"
+      thresholdValue: "80"
+      actualValue: "{{ $value }}"
+    annotations:
+       summary: "Host high CPU load (instance {{ $labels.instance }})"
+       description: "CPU load is > 80%  VALUE = {{ $value }} "
+  - alert: HostHighCpuLoad critical
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+    for: 5m
+    labels:
+      errorMessage: "SystemResources:CPU Usage high, critical"
+      originatingNode: "{{ $labels.instance }}"
+      severity: "critical"
+      thresholdValue: "90"
+      actualValue: "{{ $value }}"
+    annotations:
+       summary: "Host high CPU load (instance {{ $labels.instance }})"
+       description: "CPU load is > 90%  VALUE = {{ $value }} "
+  
